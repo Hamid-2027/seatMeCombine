@@ -1,0 +1,21 @@
+{
+  "name": "firebase-functions-demo",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions with Express",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.17.1",
+    "firebase-admin": "^10.0.0",
+    "firebase-functions": "^3.16.0"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "private": true
+}

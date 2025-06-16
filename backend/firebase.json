@@ -1,0 +1,71 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "predeploy": [
+      ],
+      "codebase": "default"
+    },
+    {
+      "source": "seatme-backend",
+      "codebase": "seatme-backend",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ],
+  "emulators": {
+    "functions": {
+      "port": 5050
+    },
+    "firestore": {
+      "port": 8085
+    },
+    "hosting": {
+      "port": 5060
+    },
+    "storage": {
+      "port": 9195
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4040
+    },
+    "hub": {
+      "port": 4444
+    },
+    "logging": {
+      "port": 4545
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-east1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
