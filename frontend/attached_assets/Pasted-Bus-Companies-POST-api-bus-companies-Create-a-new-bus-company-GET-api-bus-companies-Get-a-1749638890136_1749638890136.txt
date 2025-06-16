@@ -1,0 +1,55 @@
+Bus Companies
+* POST /api/bus-companies - Create a new bus company.
+* GET /api/bus-companies - Get all bus companies.
+* GET /api/bus-companies/:id - Get a specific bus company.
+* PUT /api/bus-companies/:id - Update a bus company.
+* DELETE /api/bus-companies/:id - Delete a bus company.
+Bus Routes
+* POST /api/busRoutes - Create a new bus route.
+* GET /api/busRoutes - Get all bus routes.
+* GET /api/busRoutes/:id - Get a specific bus route.
+* PUT /api/busRoutes/:id - Update a bus route.
+* DELETE /api/busRoutes/:id - Delete a bus route.
+Seat Layouts
+* POST /api/seatLayouts - Create a new seat layout.
+* GET /api/seatLayouts - Get all seat layouts.
+* GET /api/seatLayouts/:id - Get a specific seat layout.
+* PUT /api/seatLayouts/:id - Update a seat layout.
+* DELETE /api/seatLayouts/:id - Delete a seat layout.
+Bus Schedules
+* POST /api/busSchedules - Create a new bus schedule.
+* GET /api/busSchedules - Get all bus schedules.
+* GET /api/busSchedules/:id - Get a specific bus schedule.
+* PUT /api/busSchedules/:id - Update a bus schedule.
+* DELETE /api/busSchedules/:id - Delete a bus schedule.
+Buses
+* POST /api/buses - Create a new bus.
+* GET /api/buses - Get all buses.
+* GET /api/buses/:id - Get a specific bus.
+* PUT /api/buses/:id - Update a bus.
+* DELETE /api/buses/:id - Delete a bus.
+Payment Methods
+* POST /api/payment-methods - Create a new payment method.
+* GET /api/payment-methods - Get all payment methods.
+* GET /api/payment-methods/:id - Get a specific payment method.
+* PUT /api/payment-methods/:id - Update a payment method.
+* DELETE /api/payment-methods/:id - Delete a payment method.
+Bookings
+* POST /api/bookings - Create a new booking.
+* GET /api/bookings - Get all bookings.
+* GET /api/bookings/:id - Get a specific booking.
+* PUT /api/bookings/:id - Update a booking.
+* DELETE /api/bookings/:id - Delete a booking.
+User Profiles
+* POST /api/user-profiles - Create a new user profile.
+* GET /api/user-profiles - Get all user profiles.
+* GET /api/user-profiles/:id - Get a specific user profile.
+* PUT /api/user-profiles/:id - Update a user profile.
+* DELETE /api/user-profiles/:id - Delete a user profile.
+* POST /api/user-profiles/:userId/passengers - Add a saved passenger to a user profile.
+* PUT /api/user-profiles/:userId/passengers/:passengerId - Update a saved passenger.
+* DELETE /api/user-profiles/:userId/passengers/:passengerId - Delete a saved passenger.
+* POST /api/user-profiles/:userId/payment-methods - Add a saved payment method to a user profile.
+* PUT /api/user-profiles/:userId/payment-methods/:pmId - Update a saved payment method.
+* DELETE /api/user-profiles/:userId/payment-methods/:pmId - Delete a saved payment method.
+

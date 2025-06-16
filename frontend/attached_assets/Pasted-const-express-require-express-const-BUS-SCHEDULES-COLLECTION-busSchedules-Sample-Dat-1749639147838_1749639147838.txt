@@ -1,0 +1,122 @@
+const express = require('express');
+
+const BUS_SCHEDULES_COLLECTION = 'busSchedules';
+
+// Sample Data for BusSchedules (extracted from dataStcuture.ts)
+const sampleBusSchedules = [
+  {
+    id: 'schedule1',
+    routeId: 'route1', // Link to a BusRoute
+    companyId: 'company1', // Link to a BusCompany
+    departureTime: '2024-07-26T09:00:00Z',
+    arrivalTime: '2024-07-26T17:00:00Z',
+    busId: 'bus101',
+    driverId: 'driver201',
+    fare: 1500,
+    currency: 'PKR',
+    status: 'ON_TIME', // e.g., ON_TIME, DELAYED, CANCELLED
+    availableSeats: 30,
+    seatLayoutId: 'layout_2x2_standard', // Link to a SeatLayout
+    amenities: ['WiFi', 'AC', 'Refreshments']
+  },
+  {
+    id: 'schedule2',
+    routeId: 'route2',
+    companyId: 'company2',
+    departureTime: '2024-07-27T14:00:00Z',
+    arrivalTime: '2024-07-27T19:30:00Z',
+    busId: 'bus202',
+    driverId: 'driver202',
+    fare: 1200,
+    currency: 'PKR',
+    status: 'ON_TIME',
+    availableSeats: 25,
+    seatLayoutId: 'layout_2x1_sleeper',
+    amenities: ['WiFi', 'AC', 'Charging Ports', 'Blankets']
+  }
+];
+
+module.exports = function(admin, populateInitialData) {
+    const router = express.Router();
+
+    // Create a new bus schedule
+    router.post('/', async (req, res) => {
+        try {
+            const scheduleData = req.body;
+            // Basic validation
+            if (!scheduleData.routeId || !scheduleData.companyId || !scheduleData.departureTime || !scheduleData.arrivalTime) {
+                return res.status(400).send('Missing required fields for bus schedule');
+            }
+            // The 'add' method automatically generates a new document ID
+            const docRef = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).add(scheduleData);
+            // Return the new schedule's data, including the auto-generated ID
+            res.status(201).json({ id: docRef.id, ...scheduleData });
+        } catch (error) {
+            console.error(`Error creating bus schedule: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Get all bus schedules
+    router.get('/', async (req, res) => {
+        try {
+            await populateInitialData(BUS_SCHEDULES_COLLECTION, sampleBusSchedules, 'id');
+            const snapshot = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).get();
+            const schedules = [];
+            snapshot.forEach(doc => {
+                schedules.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            res.json(schedules);
+        } catch (error) {
+            console.error(`Error fetching bus schedules: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Get a specific bus schedule by ID
+    router.get('/:id', async (req, res) => {
+        try {
+            const scheduleId = req.params.id;
+            const doc = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).get();
+            if (!doc.exists) {
+                return res.status(404).send('Bus schedule not found');
+            }
+            res.json({ id: doc.id, ...doc.data() });
+        } catch (error) {
+            console.error(`Error fetching bus schedule ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Update a bus schedule by ID
+    router.put('/:id', async (req, res) => {
+        try {
+            const scheduleId = req.params.id;
+            const scheduleData = req.body;
+            // Add validation for scheduleData as needed
+            await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).update(scheduleData);
+            const updatedDoc = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).get();
+            res.json({ id: updatedDoc.id, ...updatedDoc.data() });
+        } catch (error) {
+            console.error(`Error updating bus schedule ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Delete a bus schedule by ID
+    router.delete('/:id', async (req, res) => {
+        try {
+            const scheduleId = req.params.id;
+            await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).delete();
+            res.status(200).send(`Bus schedule ${scheduleId} deleted successfully`);
+        } catch (error) {
+            console.error(`Error deleting bus schedule ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    return router;
+};

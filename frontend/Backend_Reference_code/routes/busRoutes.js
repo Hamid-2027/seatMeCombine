@@ -1,0 +1,112 @@
+const express = require('express');
+
+const BUS_ROUTES_COLLECTION = 'busRoutes';
+
+// Sample Data for BusRoutes (extracted from dataStcuture.ts)
+const sampleBusRoutes = [
+  {
+    id: 'route4',
+    from: 'Karachi',
+    to: 'Hyderabad',
+    distance: '160 km',
+    estimatedDuration: '2h 15m',
+    availableBusTypes: ['Standard', 'Business', 'Premium'],
+    isPopular: true,
+    companyIds: ['company1', 'company4']
+  },
+  {
+    id: 'route5',
+    from: 'Lahore',
+    to: 'Faisalabad',
+    distance: '180 km',
+    estimatedDuration: '2h 45m',
+    availableBusTypes: ['Standard', 'Business'],
+    isPopular: false,
+    companyIds: ['company2', 'company5']
+  }
+];
+
+module.exports = function(admin, populateInitialData) {
+    const router = express.Router();
+
+    // Create a new bus route
+    router.post('/', async (req, res) => {
+        try {
+            const routeData = req.body;
+            // Basic validation
+            if (!routeData.from || !routeData.to) {
+                return res.status(400).send('Missing required fields: from, to');
+            }
+            // The 'add' method automatically generates a new document ID
+            const docRef = await admin.firestore().collection(BUS_ROUTES_COLLECTION).add(routeData);
+            // Return the new route's data, including the auto-generated ID
+            res.status(201).json({ id: docRef.id, ...routeData });
+        } catch (error) {
+            console.error(`Error creating bus route: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Get all bus routes
+    router.get('/', async (req, res) => {
+        try {
+            const snapshot = await admin.firestore().collection(BUS_ROUTES_COLLECTION).get();
+            const routes = [];
+            snapshot.forEach(doc => {
+                routes.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            res.json(routes);
+        } catch (error) {
+            console.error(`Error fetching bus routes: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Get a specific bus route by ID
+    router.get('/:id', async (req, res) => {
+        try {
+            const routeId = req.params.id;
+            const doc = await admin.firestore().collection(BUS_ROUTES_COLLECTION).doc(routeId).get();
+            if (!doc.exists) {
+                return res.status(404).send('Bus route not found');
+            }
+            res.json({ id: doc.id, ...doc.data() });
+        } catch (error) {
+            console.error(`Error fetching bus route ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Update a bus route by ID
+    router.put('/:id', async (req, res) => {
+        try {
+            const routeId = req.params.id;
+            const routeData = req.body;
+            if (!routeData.from || !routeData.to) {
+                return res.status(400).send('Missing required fields: from, to');
+            }
+            await admin.firestore().collection(BUS_ROUTES_COLLECTION).doc(routeId).update(routeData);
+            res.json({ id: routeId, ...routeData });
+        } catch (error) {
+            console.error(`Error updating bus route ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    // Delete a bus route by ID
+    router.delete('/:id', async (req, res) => {
+        try {
+            const routeId = req.params.id;
+            await admin.firestore().collection(BUS_ROUTES_COLLECTION).doc(routeId).delete();
+            res.status(200).send(`Bus route ${routeId} deleted successfully`);
+        } catch (error) {
+            console.error(`Error deleting bus route ${req.params.id}: ${error.message}`, error);
+            res.status(500).send(error.message);
+        }
+    });
+
+    return router;
+};
