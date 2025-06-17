@@ -1,4 +1,5 @@
 import type { BusSchedule } from "@shared/schema";
+export type { BusSchedule };
 import apiClient from './index';
 
 const endpoint = '/busSchedules';

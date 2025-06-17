@@ -71,6 +71,7 @@ export interface Bus {
   companyId: string;
   amenities: string[];
   seatLayout: SeatLayoutTemplate;
+  totalSeats: number;
 }
 
 export interface SeatLayoutTemplate {
@@ -213,4 +214,4 @@ export const routes: Route[] = [
     isPopular: true,
     companyIds: ['company1', 'company4', 'company5']
   }
-]; 
+];

@@ -5,14 +5,14 @@ import { SeatStatus } from "@shared/schema";
 
 interface Seat {
   seatNumber: string;
-  status: SeatStatus;
+  status?: SeatStatus;
   gender?: 'MALE' | 'FEMALE';
   passengerId?: string;
 }
 
 interface BusSeatLayoutProps {
   layout: {
-    layout: Record<string, (string | null)[]>;
+    layout?: Record<string, (string | null)[]>;
     rows: number;
     columns: number;
     seats: Seat[];
@@ -57,7 +57,7 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
           {allRows.map(([rowKey, row], rowIndex) => (
             <div key={rowKey} className="flex gap-2 justify-center">
               {row.map((seatNumber, seatIndex) => {
-                if (seatNumber === '') {
+                if (!seatNumber) {
                   return <div key={`${rowKey}-${seatIndex}`} className="w-10 h-10" />; // Aisle
                 }
 

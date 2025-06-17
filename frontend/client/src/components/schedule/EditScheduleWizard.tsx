@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getBusById } from "@/api/buses";
+import { getBuses, getBusById } from "@/api/buses";
+import { getBusRoutes } from "@/api/busRoutes";
+import { getBusCompanies } from "@/api/busCompanies";
 import { updateBusSchedule } from "@/api/busSchedules";
 import { apiClient } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,15 +28,27 @@ export default function EditScheduleWizard({ schedule, onClose, onSuccess }: Edi
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (schedule?.seatLayout?.seats) {
+      const bookedSeats = schedule.seatLayout.seats
+        .filter(seat => seat.status === SeatStatus.BOOKED)
+        .map(seat => seat.seatNumber);
+      setSelectedSeats(bookedSeats);
+    }
+  }, [schedule]);
+
   // Fetch dropdown data (buses, routes, companies)
   const { data: buses = [], isLoading: isLoadingBuses, error: busesError } = useQuery<any[]>({
     queryKey: ['buses'],
+    queryFn: getBuses,
   });
   const { data: routes = [], isLoading: isLoadingRoutes, error: routesError } = useQuery<any[]>({
     queryKey: ['busRoutes'],
+    queryFn: getBusRoutes
   });
   const { data: companies = [], isLoading: isLoadingCompanies, error: companiesError } = useQuery<any[]>({
     queryKey: ['bus-companies'],
+    queryFn: getBusCompanies,
   });
 
   // Fetch bus details for seat layout in step 2
@@ -71,10 +85,9 @@ export default function EditScheduleWizard({ schedule, onClose, onSuccess }: Edi
       const updatedData = {
         ...formData,
         departureTime: formData.departureTime ? new Date(formData.departureTime).toISOString() : '',
-        arrivalTime: formData.arrivalTime ? new Date(formData.arrivalTime).toISOString() : '',
-        amenities: Array.isArray(formData.amenities)
+        arrivalTime: formData.arrivalTime ? new Date(formData.arrivalTime).toISOString() : '',          amenities: Array.isArray(formData.amenities)
           ? formData.amenities
-          : (typeof formData.amenities === 'string' ? formData.amenities.split(',').map((a: string) => a.trim()) : []),
+          : (typeof formData.amenities === 'string' ? formData.amenities.split(',').map((a: string) => a.trim()) : []) as string[],
       };
       // If busDetails and seatLayout exist, update seatLayout and availableSeats
       if (busDetails?.seatLayout) {
@@ -170,7 +183,7 @@ export default function EditScheduleWizard({ schedule, onClose, onSuccess }: Edi
                           <div className="py-2 text-center text-sm text-destructive">Failed to load routes</div>
                         ) : (
                           routes.map((route) => (
-                            <SelectItem key={route.id} value={route.id}>{route.origin} → {route.destination}</SelectItem>
+                            <SelectItem key={route.id} value={route.id}>{(route.origin || route.from)} → {(route.destination || route.to)}</SelectItem>
                           ))
                         )}
                       </SelectContent>

@@ -31,6 +31,7 @@ const busFormSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   busType: z.string().min(1, "Bus type is required"),
   manufacturingYear: z.number().default(new Date().getFullYear()),
+  totalSeats: z.number().min(1, "Total seats must be a positive number"),
   engineType: z.string().optional(),
   description: z.string().optional(),
   features: z.array(z.string()).default([]),
@@ -71,6 +72,7 @@ export default function AddBusModal({ open, onOpenChange }: AddBusModalProps) {
       companyId: "",
       busType: "",
       manufacturingYear: new Date().getFullYear(),
+      totalSeats: 0,
       engineType: "",
       description: "",
       features: [],
@@ -83,20 +85,20 @@ export default function AddBusModal({ open, onOpenChange }: AddBusModalProps) {
 
   const createBusMutation = useMutation({
     mutationFn: (data: BusFormData) => {
-      const selectedLayoutData = seatLayouts?.find(layout => layout.id === data.seatLayoutId);
+      const { seatLayoutId, ...restOfData } = data;
+      const selectedLayoutData = seatLayouts?.find(layout => layout.id === seatLayoutId);
       if (!selectedLayoutData) {
         throw new Error("Selected seat layout not found");
       }
 
       const busData = {
-        ...data,
+        ...restOfData,
         certifications: data.certifications || "",
         additionalFeatures: data.additionalFeatures || "",
         seatLayout: selectedLayoutData,
-        totalSeats: selectedLayoutData.seats.length,
       };
 
-      return createBus(busData);
+      return createBus(busData as Omit<Bus, 'id'>);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buses'] });
@@ -291,6 +293,16 @@ export default function AddBusModal({ open, onOpenChange }: AddBusModalProps) {
                       type="number"
                       placeholder="2024"
                       {...form.register("manufacturingYear", { valueAsNumber: true })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="totalSeats">Total Seats</Label>
+                    <Input
+                      id="totalSeats"
+                      type="number"
+                      placeholder="e.g., 45"
+                      {...form.register("totalSeats", { valueAsNumber: true })}
                     />
                   </div>
 

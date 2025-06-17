@@ -8,11 +8,17 @@ import NotFound from "@/pages/not-found";
 import BusDetailsPage from "@/pages/BusDetailsPage";
 import ScheduleDetailsPage from "@/pages/ScheduleDetailsPage";
 import CreateBusSchedule from "@/pages/CreateBusSchedule";
+import SchedulesPage from "@/pages/Schedules";
+import EditSchedulePage from "@/pages/EditSchedulePage";
+import EditRoutePage from "@/pages/EditRoutePage";
 
 function Router() {
   return (
     <Switch>
-            <Route path="/create-schedule" component={CreateBusSchedule} />
+      <Route path="/schedules" component={SchedulesPage} />
+      <Route path="/schedules/:id/edit" component={EditSchedulePage} />
+      <Route path="/route/:id/edit" component={EditRoutePage} />
+      <Route path="/create-schedule" component={CreateBusSchedule} />
       <Route path="/bus/:id" component={BusDetailsPage} />
       <Route path="/schedule/:id" component={ScheduleDetailsPage} />
       <Route path="/bus-management">

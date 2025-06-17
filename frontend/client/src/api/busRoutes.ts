@@ -1,15 +1,5 @@
 import apiClient from './index';
-
-export interface BusRoute {
-  id: string;
-  from: string;
-  to: string;
-  distance: string;
-  estimatedDuration: string;
-  availableBusTypes: string[];
-  isPopular: boolean;
-  companyIds: string[];
-}
+import type { BusRoute } from '@shared/schema';
 
 const endpoint = '/busRoutes';
 

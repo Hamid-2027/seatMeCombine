@@ -20,6 +20,7 @@ const sampleBuses = [
     registrationNumber: 'LHR-123',
     operator: 'Daewoo Express',
     companyId: 'company1',
+    totalSeats: 24,
     amenities: ['WiFi', 'USB Charging', 'Air Conditioning', 'Refreshments', 'Reclining Seats'],
     seatLayoutTemplate: { // renamed from seatLayout
       layoutId: 'bus1_layout_premium',
@@ -45,6 +46,7 @@ const sampleBuses = [
     registrationNumber: 'LHE-456',
     operator: 'Faisal Movers',
     companyId: 'company2',
+    totalSeats: 40,
     amenities: ['WiFi', 'Air Conditioning', 'Snacks', 'Adjustable Seats'],
     seatLayoutTemplate: { // renamed from seatLayout
       layoutId: 'bus2_layout_business', // Using the layoutId from sampleSeatLayouts for conceptual link
@@ -75,8 +77,13 @@ module.exports = function(admin, populateInitialData) {
       try {
         const busData = req.body;
         // Basic validation
-        if (!busData.name || !busData.registrationNumber || !busData.companyId) {
-          return res.status(400).send('Missing required fields: name, registrationNumber, companyId');
+        if (!busData.name || !busData.registrationNumber || !busData.companyId || !busData.totalSeats) {
+          return res.status(400).send('Missing required fields: name, registrationNumber, companyId, totalSeats');
+        }
+        
+        // Validate totalSeats is a positive number
+        if (typeof busData.totalSeats !== 'number' || busData.totalSeats <= 0) {
+          return res.status(400).send('totalSeats must be a positive number');
         }
         // Ensure seatLayout.layout is a map if provided
         // Ensure seatLayoutTemplate.layout is a map if provided

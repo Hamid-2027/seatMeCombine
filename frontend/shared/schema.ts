@@ -112,3 +112,13 @@ export interface BusSchedule {
   amenities?: string[];
   seatLayout: ScheduleSeatLayout;
 }
+
+export interface BusRoute {
+  id: string;
+  from: string;
+  to: string;
+  distance: string;
+  estimatedDuration: string;
+  isPopular: boolean;
+  availableBusTypes: string[];
+}
