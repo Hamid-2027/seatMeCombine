@@ -7,6 +7,7 @@ import BusSeatLayout from '@/components/schedule/BusSeatLayout';
 import { Plus, Eye } from "lucide-react";
 import type { SeatLayout } from "@shared/schema";
 import LayoutPreviewModal from '@/components/modals/LayoutPreviewModal';
+import PaymentMethods from '@/components/payment/PaymentMethods';
 
 export default function SeatLayoutManager() {
   const [isPreviewOpen, setPreviewOpen] = useState(false);
@@ -43,6 +44,7 @@ export default function SeatLayoutManager() {
             </Card>
           ))}
         </div>
+
       </div>
     );
   }
@@ -55,6 +57,9 @@ export default function SeatLayoutManager() {
             <Plus className="w-4 h-4 mr-2" />
             Create Custom Layout
           </Button>
+          {/* <div>
+        <PaymentMethods/>
+        </div> */}
         </div>
 
         {/* Predefined Templates */}

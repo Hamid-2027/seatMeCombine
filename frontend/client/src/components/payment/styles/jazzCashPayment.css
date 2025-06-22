@@ -1,0 +1,165 @@
+.jazzcash-form {
+  max-width: 350px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.jazzcash-form .form-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center !important;  /* Changed from center to start */
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.jazzcash-form .form-group:focus-within {
+  border-color: #2d3748;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(45, 55, 72, 0.2);
+}
+
+.jazzcash-form .submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  background: #2d3748;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.jazzcash-form .submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  background: #1a202c;
+}
+
+.payment-status {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.payment-status.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.payment-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #718096;
+  border-color: #718096;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.submit-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: #718096;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  padding-left: 4px;
+  letter-spacing: 0.2px;
+  font-weight: 500;
+}
+
+.input-wrapper input {
+  font-size: 0.95rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #2d3748;
+  box-shadow: 0 0 0 1px rgba(45, 55, 72, 0.2);
+}
+
+.input-wrapper input::placeholder {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .jazzcash-form {
+    max-width: 100%;
+    padding: 1rem;
+    margin: 0 0.5rem;
+  }
+
+  .jazzcash-form .form-group {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .input-wrapper input {
+    font-size: 16px; /* Better for mobile touch */
+    padding: 0.75rem;
+  }
+
+  .submit-button {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .jazzcash-form {
+    box-shadow: none;
+    padding: 0.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .error-message {
+    font-size: 0.65rem;
+  }
+}
+
+/* Tablet Optimization */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .jazzcash-form {
+    max-width: 500px;
+    padding: 1.5rem;
+  }
+}

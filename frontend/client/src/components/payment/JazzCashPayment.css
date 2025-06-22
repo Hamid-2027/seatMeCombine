@@ -1,0 +1,84 @@
+/* Payment.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .payment-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .payment-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .payment-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+  }
+  
+  .payment-input:focus {
+    border-color: #007bff;
+  }
+  
+  .payment-button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .payment-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .payment-button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 480px) {
+    .payment-container {
+      padding: 1rem;
+      margin: 1rem;
+    }
+  
+    .payment-title {
+      font-size: 20px;
+    }
+  
+    .payment-input {
+      font-size: 14px;
+    }
+  
+    .payment-button {
+      font-size: 14px;
+    }
+  }

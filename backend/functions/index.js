@@ -61,23 +61,106 @@ const busScheduleRoutes = require('./routes/busScheduleRoutes');
 const busesRoutes = require('./routes/buses');
 const paymentMethodRoutes = require('./routes/paymentMethodRoutes');
 const userProfileRoutes = require('./routes/userProfileRoutes');
-
-// Mount route modules
-app.use('/api/bus-companies', busCompanyRoutes(admin, populateInitialData));
-app.use('/api/busRoutes', busRoutes(admin, populateInitialData));
-app.use('/api/seatLayouts', seatLayoutRoutes(admin, populateInitialData));
-app.use('/api/busSchedules', busScheduleRoutes(admin, populateInitialData));
-app.use('/api/buses', busesRoutes(admin, populateInitialData));
-app.use('/api/payment-methods', paymentMethodRoutes(admin, populateInitialData));
-app.use('/api/user-profiles', userProfileRoutes(admin, populateInitialData));
 const bookingRoutes = require('./routes/bookingRoutes');
-app.use('/api/bookings', bookingRoutes(admin, populateInitialData));
 
+// Create a router for the API
+const apiRouter = express.Router();
 
+// Mount route modules on the apiRouter
+apiRouter.use('/bus-companies', busCompanyRoutes(admin, populateInitialData));
+apiRouter.use('/busRoutes', busRoutes(admin, populateInitialData));
+apiRouter.use('/seatLayouts', seatLayoutRoutes(admin, populateInitialData));
+apiRouter.use('/busSchedules', busScheduleRoutes(admin, populateInitialData));
+apiRouter.use('/buses', busesRoutes(admin, populateInitialData));
+apiRouter.use('/payment-methods', paymentMethodRoutes(admin, populateInitialData));
+apiRouter.use('/user-profiles', userProfileRoutes(admin, populateInitialData));
+apiRouter.use('/bookings', bookingRoutes(admin, populateInitialData));
 
+// Mount the apiRouter under /seatme-backend/api
+app.use('/seatme-backend/api', apiRouter);
+
+const Stripe = require('stripe');
+const nodemailer = require('nodemailer');
+const axios = require('axios');
+const generateInvoicePDF = require('./generateInvoicePDF');
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+
+// Initialize Stripe with your secret key
+const stripe = new Stripe(functions.config().stripe.secret);
+
+// /create-payment-intent
+exports.createPaymentIntent = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 1000,
+        currency: 'usd',
+        payment_method_types: ['card'],
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+});
+
+// /send-invoice
+exports.sendInvoice = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    const { email, amount, paymentId } = req.body;
+    try {
+      // Generate PDF in temp directory
+      const invoicePath = path.join(os.tmpdir(), `invoice_${paymentId}.pdf`);
+      await generateInvoicePDF({ email, amount, paymentId, filePath: invoicePath });
+
+      // Nodemailer config
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: functions.config().gmail.user,
+          pass: functions.config().gmail.pass,
+        },
+      });
+
+      let mailOptions = {
+        from: functions.config().gmail.user,
+        to: email,
+        subject: 'Your Payment Invoice',
+        text: 'Thank you for your payment. Please find your invoice attached.',
+        attachments: [{ filename: 'invoice.pdf', path: invoicePath }],
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Invoice sent successfully!' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send invoice' });
+    }
+  });
+});
+
+// /process-payment
+exports.processPayment = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    const payload = {
+      // ...copy your payload fields here, using functions.config() for secrets...
+      // Example:
+      pp_MerchantID: functions.config().jazzcash.merchant_id,
+      pp_Password: functions.config().jazzcash.password,
+      // ...other fields from req.body...
+    };
+    try {
+      const response = await axios.post('https://sandbox.jazzcash.com.pk/ApplicationAPI/API/Payment/DoTransaction', payload);
+      res.json(response.data);
+    } catch (error) {
+      res.json({ error: error.message });
+    }
+  });
+});
 
 // Export the Express app as a Firebase Cloud Function
-exports.api = functions.https.onRequest(app);
+exports.api = functions.region('asia-east1').https.onRequest(app);
 
 // If running directly (not as a Firebase Function)
 if (require.main === module) {
@@ -86,3 +169,5 @@ if (require.main === module) {
     console.log(`Server is running on port ${PORT}`);
   });
 }
+
+// firebase emulators:start --only functions

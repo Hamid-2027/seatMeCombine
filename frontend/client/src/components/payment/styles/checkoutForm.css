@@ -1,0 +1,496 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Container Style */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.payment-methods {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.payment-methods h2 {
+  background: linear-gradient(to right, #1a365d, #2d3748);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.method-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  max-width: 400px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+}
+
+.method-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: 48px;
+}
+
+.method-buttons button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.method-buttons button:hover {
+  border-color: #4299e1;
+  color: #4299e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+.method-buttons button.active {
+  background: #2d3748;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.payment-form {
+  min-height: auto;
+  padding: 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 1rem;
+}
+
+/* Common Form Styles */
+.jazzcash-form, .stripe-form {
+  max-width: 350px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.form-group:focus-within {
+  border-color: #2d3748;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(45, 55, 72, 0.2);
+}
+
+.form-group label {
+  color: #2d3748;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: #2d3748;
+  box-shadow: none;
+  outline: none;
+}
+
+/* Submit Button Styles */
+.submit-button,
+.stripe-form button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  background: #2d3748;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover,
+.stripe-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  background: #1a202c;
+}
+
+/* Stripe Form Specific */
+.stripe-form .form-row {
+  background: #ffffff;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+/* Stripe Form Specific Styles */
+.stripe-form .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.stripe-form .card-element-container {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.stripe-form .card-element-container:focus-within {
+  border-color: #2d3748;
+  box-shadow: 0 0 0 1px rgba(45, 55, 72, 0.2);
+}
+
+.stripe-form button {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  background: #2d3748;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stripe-form button:disabled {
+  background: #a0aec0;
+  border-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.stripe-form button:not(:disabled):hover {
+  background: #1a202c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Remove redundant styles */
+.stripe-form .form-row {
+  display: none;
+}
+
+/* Remove old styles */
+.jazzcash-form .form-group,
+.stripe-form .form-group {
+  margin-bottom: 0.75rem;
+}
+
+/* Stripe Card Input Styles */
+.stripe-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.card-input-wrapper {
+  margin-bottom: 2rem;
+}
+
+.stripe-form .form-group {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.stripe-form label {
+  color: #1a1f36;
+  font-size: 0.813rem;
+  font-weight: 500;
+  margin-bottom: 2px; /* Reduced from 0.25rem */
+  display: block;
+}
+
+.card-input-container {
+  padding: 6px 12px; /* Reduced top/bottom padding */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  min-height: 32px; /* Reduced from 36px */
+}
+
+/* Card Number Field */
+.card-number-group {
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
+}
+
+/* Row for CVC and Expiry */
+.card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem; /* Reduced from 1.25rem */
+  margin-top: 0.5rem; /* Reduced from 0.75rem */
+}
+
+/* Remove old form-group styles for Stripe form */
+.stripe-form .form-group {
+  margin-bottom: .5rem;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* Override any existing grid styles */
+.stripe-form .form-group {
+  grid-template-columns: 1fr;
+}
+
+/* Stripe Element Specific */
+.StripeElement {
+  height: 18px; /* Reduced from 20px */
+  padding: 0;
+}
+
+/* Submit Button */
+.stripe-form button[type="submit"] {
+  width: 100%;
+  padding: 0.875rem;
+  background: #1a202c;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  margin-top: 1.5rem;
+}
+
+.stripe-form button[type="submit"]:not(:disabled):hover {
+  background: #2d3748;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11);
+}
+
+/* Payment Status Messages */
+.payment-status {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.payment-status.success {
+  background: #f0fff4;
+  color: #2f855a;
+  border: 1px solid #c6f6d5;
+}
+
+.payment-status.error {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid #fed7d7;
+}
+
+/* Remove unnecessary styles */
+.card-brand-icon,
+.stripe-form .form-row {
+  display: none;
+}
+
+/* Loading Spinner */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.stripe-form button[type="submit"].loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .payment-methods {
+    max-width: 100%;
+    padding: 1rem;
+    margin: 0 0.5rem;
+  }
+
+  .method-buttons {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .payment-form {
+    padding: 0.5rem;
+  }
+
+  .stripe-form {
+    max-width: 100%;
+    padding: 1rem;
+  }
+
+  .card-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .card-input-container {
+    padding: 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .payment-methods h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .method-buttons button {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+
+  .stripe-form {
+    box-shadow: none;
+  }
+
+  .payment-status {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+}
+
+/* Tablet Optimization */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .payment-methods {
+    max-width: 700px;
+  }
+
+  .method-buttons {
+    max-width: 500px;
+  }
+
+  .stripe-form {
+    max-width: 600px;
+  }
+}
+
+/* Large Screens */
+@media screen and (min-width: 1025px) {
+  .payment-methods {
+    max-width: 800px;
+  }
+}
+
+/* Touch Device Optimization */
+@media (hover: none) {
+  .method-buttons button:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .submit-button:hover,
+  .stripe-form button:hover {
+    transform: none;
+  }
+}

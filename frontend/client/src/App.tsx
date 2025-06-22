@@ -11,6 +11,8 @@ import CreateBusSchedule from "@/pages/CreateBusSchedule";
 import SchedulesPage from "@/pages/Schedules";
 import EditSchedulePage from "@/pages/EditSchedulePage";
 import EditRoutePage from "@/pages/EditRoutePage";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
 
 function Router() {
@@ -48,15 +50,19 @@ function Router() {
     </Switch>
   );
 }
+const stripePromise = loadStripe("pk_test_51QtBl3JCOawnh7ZxEP6f10shKXZYwlSTQve3MmyYjOHTpthGGivL5Rov5LYLUndfuqEzeJ1F4OvQ2ZuKiMCHTSSW00wHuNYjTM");
+
 
 function App() {
   return (
+    <Elements stripe={stripePromise}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
+    </Elements>
   );
 }
 
