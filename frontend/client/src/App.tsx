@@ -12,6 +12,7 @@ import SchedulesPage from "@/pages/Schedules";
 import EditSchedulePage from "@/pages/EditSchedulePage";
 import EditRoutePage from "@/pages/EditRoutePage";
 
+
 function Router() {
   return (
     <Switch>
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/analytics">
         <Dashboard section="analytics" />
       </Route>
+
       <Route path="/dashboard">
         <Dashboard section="overview" />
       </Route>

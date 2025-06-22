@@ -15,6 +15,7 @@ import Loader from "@/components/ui/Loader";
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import FullScreenLoader from '@/components/ui/FullScreenLoader';
 
 interface EditSchedulePageProps {
   params: { id: string };
@@ -133,19 +134,37 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
 
     setIsLoading(true);
     try {
+      const getSeatStatus = (seatNumber: string) => {
+        const originalSeat = schedule.seatLayout.seats.find(s => s.seatNumber === seatNumber);
+        const isOriginallyBooked = originallyBookedSeats.includes(seatNumber);
+        const isSelected = selectedSeats.includes(seatNumber);
+
+        if (isSelected && !isOriginallyBooked) {
+          return SeatStatus.BOOKED; // Newly booked by admin
+        } 
+        if (!isSelected && !isOriginallyBooked) {
+            return SeatStatus.AVAILABLE; // Was available, remains available
+        }
+        // For seats that were originally booked or have other statuses
+        return originalSeat ? originalSeat.status : SeatStatus.AVAILABLE;
+      };
+
       const updatedData = {
         ...formData,
-        departureTime: new Date(formData.departureTime).toISOString(),
-        arrivalTime: new Date(formData.arrivalTime).toISOString(),
-        amenities: typeof formData.amenities === 'string' ? formData.amenities.split(',').map((item: string) => item.trim()) : [],
-        fare: parseFloat(formData.fare),
-        seatLayout: {
-          ...busDetails.seatLayout,
-          seats: busDetails.seatLayout.seats.map((seat: any) => ({
-            ...seat,
-            status: selectedSeats.includes(seat.seatNumber) ? SeatStatus.BOOKED : SeatStatus.AVAILABLE,
-          })),
-        },
+        departureTime: new Date(formData.departureTime!).toISOString(),
+        arrivalTime: new Date(formData.arrivalTime!).toISOString(),
+        amenities: typeof formData.amenities === 'string' ? formData.amenities.split(',').map(item => item.trim()) : [],
+        fare: parseFloat(formData.fare!),
+        // Only update seatLayout if it exists on the schedule
+        ...(schedule.seatLayout && {
+          seatLayout: {
+            ...schedule.seatLayout,
+            seats: schedule.seatLayout.seats.map((seat) => ({
+              ...seat,
+              status: getSeatStatus(seat.seatNumber),
+            })),
+          },
+        })
       };
       await updateBusSchedule(schedule.id, updatedData as any);
       await queryClient.invalidateQueries({ queryKey: ['schedule', params.id] });
@@ -180,7 +199,9 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
   }
 
   return (
-    <div className="flex flex-col h-full p-4">
+    <>
+      {isLoading && <FullScreenLoader message="Updating Schedule..." />}
+      <div className="flex flex-col h-full p-4">
       <header className="flex items-center gap-4 pb-4 border-b">
         <Button variant="outline" size="icon" onClick={() => setLocation(`/schedule/${params.id}`)}>
           <ArrowLeft className="h-4 w-4" />
@@ -254,7 +275,7 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
             <CardFooter className="flex justify-end gap-4">
               <Button type="button" variant="outline" onClick={() => setLocation(`/schedule/${params.id}`)} disabled={isLoading}>Cancel</Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? <Loader size="sm" /> : 'Save Changes'}
+                Save Changes
               </Button>
             </CardFooter>
           </Card>
@@ -286,5 +307,6 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
         </div>
       </form>
     </div>
+    </>
   );
 }

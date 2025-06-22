@@ -39,11 +39,11 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
   return (
     <div className="flex flex-col items-center">
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 mb-4">
-        <div className="flex items-center gap-1"><div className={`w-6 h-6 border-2 ${seatColors.available} rounded-md mr-1`} /> Available</div>
-        <div className="flex items-center gap-1"><div className={`w-6 h-6 border-2 ${seatColors.selected} rounded-md mr-1`} /> Selected</div>
-        <div className="flex items-center gap-1"><div className={`w-6 h-6 border-2 ${seatColors.male} rounded-md mr-1`} /> Male</div>
-        <div className="flex items-center gap-1"><div className={`w-6 h-6 border-2 ${seatColors.female} rounded-md mr-1`} /> Female</div>
+      <div className="flex flex-row flex-nowrap items-center justify-center gap-x-3 text-xs mb-4">
+        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.available} rounded-sm mr-1`} />Available</div>
+        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.selected} rounded-sm mr-1`} />Selected</div>
+        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.male} rounded-sm mr-1`} />Male</div>
+        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.female} rounded-sm mr-1`} />Female</div>
       </div>
 
       {/* Steering wheel icon */}
@@ -57,7 +57,7 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
           {allRows.map(([rowKey, row], rowIndex) => (
             <div key={rowKey} className="flex gap-2 justify-center">
               {row.map((seatNumber, seatIndex) => {
-                if (!seatNumber) {
+                if (!seatNumber || seatNumber.toUpperCase() === 'A') {
                   return <div key={`${rowKey}-${seatIndex}`} className="w-10 h-10" />; // Aisle
                 }
 
@@ -116,7 +116,7 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
                           : 'Available'
                     }
                   >
-                    {seatNumber}
+                    {seatNumber.toLowerCase()}
                     {seatData.gender === 'MALE' && isBooked && <MaleIcon className="ml-1 text-xs" />}
                     {seatData.gender === 'FEMALE' && isBooked && <FemaleIcon className="ml-1 text-xs" />}
                   </button>
