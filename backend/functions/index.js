@@ -2,7 +2,11 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const dotenv = require("dotenv");
+const path = require("path");
+
+// Point directly to the .env file in the same directory
+dotenv.config({ path: path.resolve(__dirname, './.env') });
 
 const serviceAccount = {
   type: process.env.FIREBASE_TYPE,
@@ -76,35 +80,183 @@ apiRouter.use('/payment-methods', paymentMethodRoutes(admin, populateInitialData
 apiRouter.use('/user-profiles', userProfileRoutes(admin, populateInitialData));
 apiRouter.use('/bookings', bookingRoutes(admin, populateInitialData));
 
-// Mount the apiRouter under /seatme-backend/api
-app.use('/seatme-backend/api', apiRouter);
+// Mount the apiRouter at the root
+app.use('/api/', apiRouter);
 
 const Stripe = require('stripe');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const generateInvoicePDF = require('./generateInvoicePDF');
 const os = require('os');
-const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 // Initialize Stripe with your secret key
-const stripe = new Stripe(functions.config().stripe.secret);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// /create-payment-intent
-exports.createPaymentIntent = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {
-    try {
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: 1000,
-        currency: 'usd',
-        payment_method_types: ['card'],
-      });
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
+// Helper function to format date/time for JazzCash
+const formatDateTime = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+};
+
+// Helper function to create the secure hash for JazzCash
+const createSecureHash = (payload, hashKey) => {
+  const sortedKeys = Object.keys(payload).sort();
+
+  // 1. Create a string of non-empty values, sorted by key.
+  const valuesString = sortedKeys
+    .filter(key => !key.startsWith('ppmpf_')) // Exclude ppmpf fields from hash
+    .map(key => payload[key])
+    .filter(value => value !== '' && value !== null && value !== undefined)
+    .join('&');
+
+  // 2. Prepend the hashKey (Integrity Salt) and an ampersand to the string of values.
+  const dataToHash = `${hashKey}&${valuesString}`;
+
+  // 3. Calculate the HMAC-SHA256 of the resulting string using the hashKey as the secret.
+  const hmac = crypto.createHmac('sha256', hashKey);
+  hmac.update(dataToHash);
+  return hmac.digest('hex');
+};
+
+// Create a new router for payment-related routes
+const paymentRouter = express.Router();
+
+// Define the /create-payment-intent route
+paymentRouter.post('/create-payment-intent', async (req, res) => {
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 1000, // or amount from req.body
+      currency: 'usd',
+      payment_method_types: ['card'],
+    });
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    res.status(400).json({ error: error.message });
+  }
 });
+
+// Define the /jazzcash-pay route
+paymentRouter.post('/jazzcash-pay', async (req, res) => {
+  try {
+    console.log("\n--- New JazzCash Payment Request ---");
+    console.log("Timestamp:", new Date().toISOString());
+    console.log("Request Body:", req.body);
+    console.log("JAZZCASH_MERCHANT_ID loaded:", process.env.JAZZCASH_MERCHANT_ID ? 'Yes' : 'No - NOT FOUND');
+    console.log("JAZZCASH_PASSWORD loaded:", process.env.JAZZCASH_PASSWORD ? 'Yes' : 'No - NOT FOUND');
+    console.log("JAZZCASH_HASH_KEY loaded:", process.env.JAZZCASH_HASH_KEY ? 'Yes' : 'No - NOT FOUND');
+    
+    // Clean the environment variables from quotes
+    const cleanMerchantId = process.env.JAZZCASH_MERCHANT_ID ? process.env.JAZZCASH_MERCHANT_ID.replace(/'/g, '') : '';
+    const cleanPassword = process.env.JAZZCASH_PASSWORD ? process.env.JAZZCASH_PASSWORD.replace(/'/g, '') : '';
+    const cleanHashKey = process.env.JAZZCASH_HASH_KEY ? process.env.JAZZCASH_HASH_KEY.replace(/'/g, '') : '';
+    
+    console.log("Cleaned Merchant ID:", cleanMerchantId);
+    console.log("Cleaned Password length:", cleanPassword.length);
+    console.log("Cleaned Hash Key length:", cleanHashKey.length);
+
+    // --- Environment Variable Validation ---
+    const { JAZZCASH_MERCHANT_ID, JAZZCASH_PASSWORD, JAZZCASH_HASH_KEY } = process.env;
+    if (!JAZZCASH_MERCHANT_ID || !JAZZCASH_PASSWORD || !JAZZCASH_HASH_KEY) {
+      console.error('CRITICAL: JazzCash environment variables are missing. Please check the .env file.');
+      return res.status(500).json({ message: 'Server configuration error. Contact support.' });
+    }
+
+    const { amount, mobileNumber, cnic } = req.body;
+
+    if (!amount || !mobileNumber || !cnic) {
+      return res.status(400).json({ message: 'Missing required fields: amount, mobileNumber, cnic' });
+    }
+
+    // Normalize mobile number to JazzCash required format (923xxxxxxxxx)
+    const normalizeMobileNumber = (number) => {
+      const cleaned = String(number).replace(/\D/g, '');
+      if (cleaned.startsWith('03')) {
+        return '92' + cleaned.substring(1);
+      }
+      if (cleaned.length === 10 && cleaned.startsWith('3')) {
+        return '92' + cleaned;
+      }
+      return cleaned;
+    };
+    const normalizedMobileNumber = normalizeMobileNumber(mobileNumber);
+
+    const now = new Date();
+    const expiryTime = new Date(now.getTime() + 60 * 60000); // 1 hour expiry
+
+    // For MWALLET transactions, use proper field values
+    const payload = {
+      pp_Version: "1.1",
+      pp_TxnType: "MWALLET",
+      pp_Language: "EN",
+      pp_MerchantID: cleanMerchantId,
+      pp_SubMerchantID: "",
+      pp_Password: cleanPassword,
+      pp_BankID: "TBANK",  // Sandbox bank identifier
+      pp_ProductID: "RETL", // Retail product type required by JazzCash
+      pp_TxnRefNo: "TXN" + Date.now(),
+      pp_Amount: amount,
+      pp_TxnCurrency: "PKR",
+      pp_TxnDateTime: formatDateTime(now),
+      pp_BillReference: "billRef",
+      pp_Description: "Bus Booking Payment",
+      pp_TxnExpiryDateTime: formatDateTime(expiryTime),
+      pp_ReturnURL: process.env.JAZZCASH_RETURN_URL || 'http://localhost:3000/payment-status',
+      pp_SecureHash: "", // Will be calculated next
+      ppmpf_1: normalizedMobileNumber,
+      ppmpf_2: cnic.replace(/\D/g, ''), // Last 6 digits of CNIC
+      ppmpf_3: "",
+      ppmpf_4: "",
+      ppmpf_5: "",
+    };
+
+    // Create a temporary payload for hashing that doesn't include the hash itself.
+    const payloadForHash = { ...payload };
+    delete payloadForHash.pp_SecureHash; // This field must be excluded from the hash calculation.
+
+    // Calculate the hash using the corrected payload and assign it.
+    payload.pp_SecureHash = createSecureHash(payloadForHash, cleanHashKey);
+
+    console.log("Sending payload to JazzCash:", payload);
+    const jazzcashResponse = await axios.post(
+      'https://sandbox.jazzcash.com.pk/ApplicationAPI/API/Payment/DoTransaction',
+      payload,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    console.log("Received response from JazzCash:", jazzcashResponse.data);
+    const responseData = jazzcashResponse.data;
+
+    if (responseData && responseData.pp_ResponseCode === '000') {
+      res.json({
+        status: 'success',
+        message: responseData.pp_ResponseMessage || 'Payment processed successfully!',
+      });
+    } else {
+      res.status(400).json({
+        status: 'error',
+        message: responseData.pp_ResponseMessage || 'Payment failed. Please try again.',
+      });
+    }
+
+  } catch (error) {
+    console.error("Error in /jazzcash-pay route:", error.response ? error.response.data : error.message);
+    res.status(500).json({ 
+      message: 'Failed to process payment.',
+      error: error.response ? error.response.data : error.message
+    });
+  }
+});
+
+// Mount the payment router on the apiRouter
+apiRouter.use('/payment', paymentRouter);
 
 // /send-invoice
 exports.sendInvoice = functions.https.onRequest((req, res) => {

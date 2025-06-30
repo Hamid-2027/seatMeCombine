@@ -16,6 +16,7 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import FullScreenLoader from '@/components/ui/FullScreenLoader';
+import SeatBookingModal from '@/components/modals/SeatBookingModal';
 
 interface EditSchedulePageProps {
   params: { id: string };
@@ -37,13 +38,14 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
   const queryClient = useQueryClient();
 
   const [isLoading, setIsLoading] = useState(false); // For form submission
-  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
-  const [originallyBookedSeats, setOriginallyBookedSeats] = useState<string[]>([]);
   const [formData, setFormData] = useState<Partial<ScheduleFormData>>({});
+  const [schedule, setSchedule] = useState<BusSchedule | null>(null);
+  const [isBookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedSeatForBooking, setSelectedSeatForBooking] = useState<string | null>(null);
 
   // Main query for the schedule
   const { 
-    data: schedule,
+    data: initialSchedule,
     isLoading: isLoadingSchedule,
     isError: isErrorSchedule,
     error: scheduleError 
@@ -70,26 +72,20 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
 
   // Effect to populate form when schedule data loads
   useEffect(() => {
-    if (schedule) {
+    if (initialSchedule) {
+      setSchedule(initialSchedule);
       setFormData({
-        busId: schedule.busId,
-        routeId: schedule.routeId,
-        departureTime: schedule.departureTime ? new Date(schedule.departureTime).toISOString().substring(0, 16) : '',
-        arrivalTime: schedule.arrivalTime ? new Date(schedule.arrivalTime).toISOString().substring(0, 16) : '',
-        fare: schedule.fare?.toString() ?? '',
-        companyId: schedule.companyId ?? '',
-        driverId: schedule.driverId ?? '',
-        amenities: Array.isArray(schedule.amenities) ? schedule.amenities.join(', ') : '',
+        busId: initialSchedule.busId,
+        routeId: initialSchedule.routeId,
+        departureTime: initialSchedule.departureTime ? new Date(initialSchedule.departureTime).toISOString().substring(0, 16) : '',
+        arrivalTime: initialSchedule.arrivalTime ? new Date(initialSchedule.arrivalTime).toISOString().substring(0, 16) : '',
+        fare: initialSchedule.fare?.toString() ?? '',
+        companyId: initialSchedule.companyId ?? '',
+        driverId: initialSchedule.driverId ?? '',
+        amenities: Array.isArray(initialSchedule.amenities) ? initialSchedule.amenities.join(', ') : '',
       });
-      if (schedule.seatLayout?.seats) {
-        const bookedSeats = Object.values(schedule.seatLayout.seats)
-          .filter(seat => seat.status === SeatStatus.BOOKED)
-          .map(seat => seat.seatNumber);
-        setSelectedSeats(bookedSeats);
-        setOriginallyBookedSeats(bookedSeats); // Store initial state
-      }
     }
-  }, [schedule]);
+  }, [initialSchedule]);
 
   // Handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,16 +97,47 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSeatSelect = (seatNumber: string) => {
-    if (originallyBookedSeats.includes(seatNumber)) {
-      toast({ variant: "destructive", title: "Seat Locked", description: "This seat is already booked and cannot be changed." });
+  const handleSeatClick = (seatNumber: string) => {
+    if (!schedule || !schedule.seatLayout) return;
+
+    const seat = schedule.seatLayout.seats.find(s => s.seatNumber === seatNumber);
+
+    if (seat?.status === SeatStatus.BOOKED) {
+      toast({ variant: "destructive", title: "Seat Locked", description: "This seat is already booked and cannot be unbooked from this page." });
       return;
     }
-    setSelectedSeats(prev =>
-      prev.includes(seatNumber)
-        ? prev.filter(s => s !== seatNumber)
-        : [...prev, seatNumber]
-    );
+
+    setSelectedSeatForBooking(seatNumber);
+    setBookingModalOpen(true);
+  };
+
+  const handleConfirmBooking = (gender: 'MALE' | 'FEMALE') => {
+    if (!schedule || !selectedSeatForBooking) return;
+
+    const updatedSeats = schedule.seatLayout.seats.map((seat) => {
+      if (seat.seatNumber === selectedSeatForBooking) {
+        return {
+          ...seat,
+          status: SeatStatus.BOOKED,
+          gender: gender,
+          passengerId: `passenger_${new Date().getTime()}` // Placeholder passenger ID
+        };
+      }
+      return seat;
+    });
+
+    const newSchedule = {
+      ...schedule,
+      seatLayout: {
+        ...schedule.seatLayout,
+        seats: updatedSeats,
+      },
+    };
+    setSchedule(newSchedule);
+
+    setBookingModalOpen(false);
+    setSelectedSeatForBooking(null);
+    toast({ title: "Seat selected", description: "Click 'Save Changes' to confirm the booking." });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,37 +161,13 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
 
     setIsLoading(true);
     try {
-      const getSeatStatus = (seatNumber: string) => {
-        const originalSeat = schedule.seatLayout.seats.find(s => s.seatNumber === seatNumber);
-        const isOriginallyBooked = originallyBookedSeats.includes(seatNumber);
-        const isSelected = selectedSeats.includes(seatNumber);
-
-        if (isSelected && !isOriginallyBooked) {
-          return SeatStatus.BOOKED; // Newly booked by admin
-        } 
-        if (!isSelected && !isOriginallyBooked) {
-            return SeatStatus.AVAILABLE; // Was available, remains available
-        }
-        // For seats that were originally booked or have other statuses
-        return originalSeat ? originalSeat.status : SeatStatus.AVAILABLE;
-      };
-
       const updatedData = {
         ...formData,
         departureTime: new Date(formData.departureTime!).toISOString(),
         arrivalTime: new Date(formData.arrivalTime!).toISOString(),
         amenities: typeof formData.amenities === 'string' ? formData.amenities.split(',').map(item => item.trim()) : [],
         fare: parseFloat(formData.fare!),
-        // Only update seatLayout if it exists on the schedule
-        ...(schedule.seatLayout && {
-          seatLayout: {
-            ...schedule.seatLayout,
-            seats: schedule.seatLayout.seats.map((seat) => ({
-              ...seat,
-              status: getSeatStatus(seat.seatNumber),
-            })),
-          },
-        })
+        seatLayout: schedule.seatLayout, // Send the modified seat layout
       };
       await updateBusSchedule(schedule.id, updatedData as any);
       await queryClient.invalidateQueries({ queryKey: ['schedule', params.id] });
@@ -201,6 +204,12 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
   return (
     <>
       {isLoading && <FullScreenLoader message="Updating Schedule..." />}
+      <SeatBookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        onConfirm={handleConfirmBooking}
+        seatNumber={selectedSeatForBooking}
+      />
       <div className="flex flex-col h-full p-4">
       <header className="flex items-center gap-4 pb-4 border-b">
         <Button variant="outline" size="icon" onClick={() => setLocation(`/schedule/${params.id}`)}>
@@ -291,11 +300,13 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
             <CardContent className="flex justify-center items-center p-4">
               {isLoadingBusDetails ? (
                 <div className="flex justify-center items-center h-64"><Loader /></div>
-              ) : busDetails?.seatLayout ? (
+              ) : busDetails?.seatLayout && schedule?.seatLayout ? (
                 <BusSeatLayout 
-                  layout={busDetails.seatLayout} 
-                  selectedSeats={selectedSeats} 
-                  onSelect={handleSeatSelect} 
+                  layout={{
+                    ...busDetails.seatLayout,
+                    seats: schedule.seatLayout.seats // Use the live schedule data for seat statuses
+                  }} 
+                  onSelect={handleSeatClick} 
                 />
               ) : (
                 <div className="flex justify-center items-center h-64 text-muted-foreground">

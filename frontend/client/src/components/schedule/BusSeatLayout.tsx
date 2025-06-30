@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaFemale as FemaleIcon, FaMale as MaleIcon } from "react-icons/fa";
+import { FaPersonDress as FemaleIcon, FaPerson as MaleIcon } from "react-icons/fa6";
 import { GiSteeringWheel } from "react-icons/gi";
 import { SeatStatus } from "@shared/schema";
 
@@ -8,6 +8,7 @@ interface Seat {
   status?: SeatStatus;
   gender?: 'MALE' | 'FEMALE';
   passengerId?: string;
+  type?: string;
 }
 
 interface BusSeatLayoutProps {
@@ -17,7 +18,6 @@ interface BusSeatLayoutProps {
     columns: number;
     seats: Seat[];
   };
-  selectedSeats?: string[];
   onSelect?: (seatNumber: string) => void;
   readOnly?: boolean;
 }
@@ -31,7 +31,7 @@ const seatColors = {
   unavailable: "bg-gray-400 text-white border-gray-400",        // Fallback grey, white text
 };
 
-export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, readOnly = false }: BusSeatLayoutProps) {
+export default function BusSeatLayout({ layout, onSelect, readOnly = false }: BusSeatLayoutProps) {
   // Build a seat map from layout.seats and validate layout structure
   const seatsMap = new Map<string, Seat>(layout.seats.map(s => [s.seatNumber, s]));
   const allRows = layout.layout ? Object.entries(layout.layout) : [];
@@ -41,7 +41,6 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
       {/* Legend */}
       <div className="flex flex-row flex-nowrap items-center justify-center gap-x-3 text-xs mb-4">
         <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.available} rounded-sm mr-1`} />Available</div>
-        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.selected} rounded-sm mr-1`} />Selected</div>
         <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.male} rounded-sm mr-1`} />Male</div>
         <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.female} rounded-sm mr-1`} />Female</div>
       </div>
@@ -72,49 +71,41 @@ export default function BusSeatLayout({ layout, selectedSeats = [], onSelect, re
                 };
 
                 const isBooked = seatData.status === SeatStatus.BOOKED;
-                const isSelected = selectedSeats.includes(seatNumber);
 
-                // Priority: Booked (gendered), Selected, Available
+                // Set colors based on seat status
                 let colorClass = seatColors.available;
                 let textClass = "font-semibold";
 
-                // Set colors based on seat status
                 if (isBooked) {
-                  if (seatData.gender === 'MALE') {
-                    colorClass = seatColors.male;
-                    textClass += " text-white";
-                  } else if (seatData.gender === 'FEMALE') {
-                    colorClass = seatColors.female;
-                    textClass += " text-white";
-                  } else {
-                    colorClass = seatColors.unavailable;
-                    textClass += " text-white";
-                  }
-                } else if (isSelected) {
-                  colorClass = seatColors.selected;
-                  textClass += " text-black";
+                    if (seatData.gender === 'MALE') {
+                        colorClass = seatColors.male;
+                        textClass += " text-white";
+                    } else if (seatData.gender === 'FEMALE') {
+                        colorClass = seatColors.female;
+                        textClass += " text-white";
+                    } else {
+                        // This case handles seats that are booked but have no gender specified.
+                        colorClass = seatColors.unavailable;
+                        textClass += " text-white";
+                    }
                 } else {
-                  colorClass = seatColors.available;
-                  textClass += " text-blue-700";
+                    // Available seats
+                    colorClass = seatColors.available;
+                    textClass += " text-blue-700";
                 }
 
                 // Handle clickability
-                const isClickable = seatData.status === SeatStatus.AVAILABLE && !readOnly;
+                const isClickable = seatData.status === SeatStatus.AVAILABLE && seatData.type !== 'aisle' && !readOnly;
                 const hoverClass = isClickable ? "hover:opacity-90" : "cursor-not-allowed";
 
                 return (
                   <button
+                    type="button"
                     key={`${rowKey}-${seatIndex}`}
                     disabled={!isClickable}
                     className={`w-10 h-10 rounded-md flex items-center justify-center border-2 transition-colors duration-150 ${colorClass} ${textClass} ${hoverClass}`}
                     onClick={() => isClickable && onSelect?.(seatNumber)}
-                    title={
-                      isBooked 
-                        ? `Booked - ${seatData.gender ? seatData.gender : 'Unknown'}`
-                        : isSelected
-                          ? 'Selected'
-                          : 'Available'
-                    }
+                    title={isBooked ? `Booked - ${seatData.gender ? seatData.gender : 'Unknown'}` : 'Available'}
                   >
                     {seatNumber.toLowerCase()}
                     {seatData.gender === 'MALE' && isBooked && <MaleIcon className="ml-1 text-xs" />}

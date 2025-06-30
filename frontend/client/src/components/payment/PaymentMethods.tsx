@@ -4,11 +4,12 @@ import JazzCashPayment from './JazzCashPayment';
 import './styles/paymentMethods.css';
 
 const PaymentMethods = () => {
-  const [selectedMethod, setSelectedMethod] = useState(null);
+  const [selectedMethod, setSelectedMethod] = useState('');
 
   return (
     <div className="payment-methods">
-      <h2>Choose Payment Method</h2>
+      {/* <h2>Choose Payment Method</h2> */}
+
       <div className="method-buttons">
         <button 
           className={selectedMethod === 'stripe' ? 'active' : ''}
@@ -18,8 +19,11 @@ const PaymentMethods = () => {
             <rect x="2" y="5" width="20" height="14" rx="2"></rect>
             <line x1="2" y1="10" x2="22" y2="10"></line>
           </svg>
-          <span>Card Payment</span>
-        </button>
+         <span>Card Payment</span> 
+          {/* <span>Form1</span> */}
+
+        </button> 
+       
         <button 
           className={selectedMethod === 'jazzcash' ? 'active' : ''}
           onClick={() => setSelectedMethod('jazzcash')}
@@ -29,7 +33,8 @@ const PaymentMethods = () => {
             <path d="M12 12h4"></path>
             <path d="M8 12h1"></path>
           </svg>
-          <span>JazzCash</span>
+          <span>JazzCash</span> 
+
         </button>
       </div>
       {selectedMethod && (

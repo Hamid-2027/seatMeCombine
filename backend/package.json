@@ -7,6 +7,7 @@
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "ts-node src/index.ts",
+    "start:api": "nodemon functions/index.js",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "seed": "ts-node src/index.ts"
@@ -19,7 +20,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.21.2",
     "firebase-admin": "^11.11.1",
-    "firebase-functions": "^4.4.0"
+    "firebase-functions": "^4.4.0",
+    "nodemon": "^3.1.10"
   },
   "devDependencies": {
     "@types/firebase": "^3.2.3",

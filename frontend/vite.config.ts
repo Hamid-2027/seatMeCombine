@@ -21,6 +21,9 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      // Add a specific alias to force resolution of the react-icons sub-packages
+      "react-icons/fa6": path.resolve(import.meta.dirname, "node_modules/react-icons/fa6"),
+      "react-icons/gi": path.resolve(import.meta.dirname, "node_modules/react-icons/gi"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
@@ -29,9 +32,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    // This is necessary to allow access to files outside the root directory
     fs: {
-      strict: true,
-      deny: ["**/.*"],
+      allow: ['..'],
     },
   },
 });

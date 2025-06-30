@@ -93,10 +93,10 @@ module.exports = function(admin, populateInitialData) {
             // Enhanced validation for the new structure
             const requiredFields = ['routeId', 'companyId', 'departureTime', 'arrivalTime', 'busId', 'fare', 'seatLayout'];
             if (requiredFields.some(field => !scheduleData[field])) {
-                return res.status(400).send(`Missing one or more required fields: ${requiredFields.join(', ')}`);
+                return res.status(400).json({ error: `Missing one or more required fields: ${requiredFields.join(', ')}` });
             }
             if (typeof scheduleData.seatLayout !== 'object' || !scheduleData.seatLayout.layoutId || !Array.isArray(scheduleData.seatLayout.seats)) {
-                return res.status(400).send('Invalid seatLayout structure provided.');
+                return res.status(400).json({ error: 'Invalid seatLayout structure provided.' });
             }
             // The 'add' method automatically generates a new document ID
             const docRef = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).add(scheduleData);
@@ -104,7 +104,7 @@ module.exports = function(admin, populateInitialData) {
             res.status(201).json({ id: docRef.id, ...scheduleData });
         } catch (error) {
             console.error(`Error creating bus schedule: ${error.message}`, error);
-            res.status(500).send(error.message);
+            res.status(500).json({ error: error.message });
         }
     });
 
@@ -122,7 +122,7 @@ module.exports = function(admin, populateInitialData) {
             res.json(schedules);
         } catch (error) {
             console.error(`Error fetching bus schedules: ${error.message}`, error);
-            res.status(500).send(error.message);
+            res.status(500).json({ error: error.message });
         }
     });
 
@@ -132,12 +132,12 @@ module.exports = function(admin, populateInitialData) {
             const scheduleId = req.params.id;
             const doc = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).get();
             if (!doc.exists) {
-                return res.status(404).send('Bus schedule not found');
+                return res.status(404).json({ error: 'Schedule not found' });
             }
             res.json({ id: doc.id, ...doc.data() });
         } catch (error) {
             console.error(`Error fetching bus schedule ${req.params.id}: ${error.message}`, error);
-            res.status(500).send(error.message);
+            res.status(500).json({ error: error.message });
         }
     });
 
@@ -149,17 +149,17 @@ module.exports = function(admin, populateInitialData) {
             // Enhanced validation for the new structure
             const requiredFields = ['routeId', 'companyId', 'departureTime', 'arrivalTime', 'busId', 'fare', 'seatLayout'];
             if (requiredFields.some(field => !scheduleData[field])) {
-                return res.status(400).send(`Missing one or more required fields: ${requiredFields.join(', ')}`);
+                return res.status(400).json({ error: `Missing one or more required fields: ${requiredFields.join(', ')}` });
             }
             if (typeof scheduleData.seatLayout !== 'object' || !scheduleData.seatLayout.layoutId || !Array.isArray(scheduleData.seatLayout.seats)) {
-                return res.status(400).send('Invalid seatLayout structure provided.');
+                return res.status(400).json({ error: 'Invalid seatLayout structure provided.' });
             }
             await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).update(scheduleData);
             const updatedDoc = await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).get();
             res.json({ id: updatedDoc.id, ...updatedDoc.data() });
         } catch (error) {
             console.error(`Error updating bus schedule ${req.params.id}: ${error.message}`, error);
-            res.status(500).send(error.message);
+            res.status(500).json({ error: error.message });
         }
     });
 
@@ -168,10 +168,10 @@ module.exports = function(admin, populateInitialData) {
         try {
             const scheduleId = req.params.id;
             await admin.firestore().collection(BUS_SCHEDULES_COLLECTION).doc(scheduleId).delete();
-            res.status(200).send(`Bus schedule ${scheduleId} deleted successfully`);
+            res.status(200).json({ message: `Bus schedule ${scheduleId} deleted successfully` });
         } catch (error) {
             console.error(`Error deleting bus schedule ${req.params.id}: ${error.message}`, error);
-            res.status(500).send(error.message);
+            res.status(500).json({ error: error.message });
         }
     });
 

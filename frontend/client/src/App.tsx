@@ -14,54 +14,53 @@ import EditRoutePage from "@/pages/EditRoutePage";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
+// New imports for authentication
+import Login from "@/components/auth/Login";
+import Signup from "@/components/auth/Signup";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LandingPage from "@/pages/LandingPage";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/schedules" component={SchedulesPage} />
-      <Route path="/schedules/:id/edit" component={EditSchedulePage} />
-      <Route path="/route/:id/edit" component={EditRoutePage} />
-      <Route path="/create-schedule" component={CreateBusSchedule} />
-      <Route path="/bus/:id" component={BusDetailsPage} />
-      <Route path="/schedule/:id" component={ScheduleDetailsPage} />
-      <Route path="/bus-management">
-        <Dashboard section="bus-management" />
-      </Route>
-      <Route path="/route-management">
-        <Dashboard section="route-management" />
-      </Route>
-      <Route path="/schedule-management">
-        <Dashboard section="schedule-management" />
-      </Route>
-      <Route path="/seat-layouts">
-        <Dashboard section="seat-layouts" />
-      </Route>
-      <Route path="/analytics">
-        <Dashboard section="analytics" />
-      </Route>
+      {/* Landing Page Route */}
+      <Route path="/" component={LandingPage} />
+      
+      {/* Auth Routes */}
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
 
-      <Route path="/dashboard">
-        <Dashboard section="overview" />
-      </Route>
-      <Route path="/">
-        <Dashboard section="overview" />
-      </Route>
+      {/* Protected Dashboard Routes */}
+      <ProtectedRoute path="/schedules" component={SchedulesPage} />
+      <ProtectedRoute path="/schedules/:id/edit" component={EditSchedulePage} />
+      <ProtectedRoute path="/route/:id/edit" component={EditRoutePage} />
+      <ProtectedRoute path="/create-schedule" component={CreateBusSchedule} />
+      <ProtectedRoute path="/bus/:id" component={BusDetailsPage} />
+      <ProtectedRoute path="/schedule/:id" component={ScheduleDetailsPage} />
+      <ProtectedRoute path="/bus-management" component={Dashboard} section="bus-management" />
+      <ProtectedRoute path="/route-management" component={Dashboard} section="route-management" />
+      <ProtectedRoute path="/schedule-management" component={Dashboard} section="schedule-management" />
+      <ProtectedRoute path="/seat-layouts" component={Dashboard} section="seat-layouts" />
+      <ProtectedRoute path="/analytics" component={Dashboard} section="analytics" />
+      <ProtectedRoute path="/dashboard" component={Dashboard} section="overview" />
+
+      {/* Not Found Route */}
       <Route component={NotFound} />
     </Switch>
   );
 }
-const stripePromise = loadStripe("pk_test_51QtBl3JCOawnh7ZxEP6f10shKXZYwlSTQve3MmyYjOHTpthGGivL5Rov5LYLUndfuqEzeJ1F4OvQ2ZuKiMCHTSSW00wHuNYjTM");
 
+const stripePromise = loadStripe("pk_test_51QtBl3JCOawnh7ZxEP6f10shKXZYwlSTQve3MmyYjOHTpthGGivL5Rov5LYLUndfuqEzeJ1F4OvQ2ZuKiMCHTSSW00wHuNYjTM");
 
 function App() {
   return (
     <Elements stripe={stripePromise}>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
     </Elements>
   );
 }

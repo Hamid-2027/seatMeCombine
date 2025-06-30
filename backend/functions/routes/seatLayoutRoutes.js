@@ -3,55 +3,355 @@ const express = require('express');
 const SEAT_LAYOUTS_COLLECTION = 'seatLayouts';
 
 // Sample Data for SeatLayouts (extracted from dataStcuture.ts)
-const sampleSeatLayouts = [
-  {
-    layoutId: 'layout_2x2_business',
-    name: '2x2 Business Class',
-    rows: 10,
-    columns: 4,
-    layout: {
-      '0': ['S', 'A', 'A', 'S'], // S: Seat, A: Aisle
-      '1': ['S', 'A', 'A', 'S'],
-      '2': ['S', 'A', 'A', 'S'],
-      '3': ['S', 'A', 'A', 'S'],
-      '4': ['S', 'A', 'A', 'S'],
-      '5': ['S', 'A', 'A', 'S'],
-      '6': ['S', 'A', 'A', 'S'],
-      '7': ['S', 'A', 'A', 'S'],
-      '8': ['S', 'A', 'A', 'S'],
-      '9': ['S', 'S', 'S', 'S'] // Last row often has more seats
+const sampleSeatLayouts =[
+    {
+        "id": "HzA9jThvh49PNFw9ndmJ",
+        "name": "2x2 Business Class",
+        "rows": 10,
+        "columns": 4,
+        "layout": {
+            "row0": [
+                "1A",
+                "A",
+                "A",
+                "1B"
+            ],
+            "row1": [
+                "2A",
+                "A",
+                "A",
+                "2B"
+            ],
+            "row2": [
+                "3A",
+                "A",
+                "A",
+                "3B"
+            ],
+            "row3": [
+                "4A",
+                "A",
+                "A",
+                "4B"
+            ],
+            "row4": [
+                "5A",
+                "A",
+                "A",
+                "5B"
+            ],
+            "row5": [
+                "6A",
+                "A",
+                "A",
+                "6B"
+            ],
+            "row6": [
+                "7A",
+                "A",
+                "A",
+                "7B"
+            ],
+            "row7": [
+                "8A",
+                "A",
+                "A",
+                "8B"
+            ],
+            "row8": [
+                "9A",
+                "A",
+                "A",
+                "9B"
+            ],
+            "row9": [
+                "10A",
+                "10B",
+                "10C",
+                "10D"
+            ]
+        },
+        "seats": [
+            {
+                "seatNumber": "1A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "1B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "2A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "2B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "3A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "3B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "4A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "4B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "5A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "5B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "6A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "6B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "7A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "7B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "8A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "8B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "9A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "9B",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "10A",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "10B",
+                "status": "AVAILABLE",
+                "type": "AISLE",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "10C",
+                "status": "AVAILABLE",
+                "type": "AISLE",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "10D",
+                "status": "AVAILABLE",
+                "type": "WINDOW",
+                "isPremiumSeat": true
+            }
+        ]
     },
-    seats: [
-      { seatNumber: '1A', status: 'AVAILABLE', type: 'WINDOW' },
-      { seatNumber: '1B', status: 'AVAILABLE', type: 'AISLE' },
-      // ... more seats for row 1
-      { seatNumber: '10C', status: 'AVAILABLE', type: 'AISLE' },
-      { seatNumber: '10D', status: 'AVAILABLE', type: 'WINDOW' },
-    ]
-  },
-  {
-    layoutId: 'layout_1x2_sleeper',
-    name: '1x2 Sleeper',
-    rows: 8,
-    columns: 3,
-    layout: {
-      '0': ['S', 'A', 'S'],
-      '1': ['S', 'A', 'S'],
-      '2': ['S', 'A', 'S'],
-      '3': ['S', 'A', 'S'],
-      '4': ['S', 'A', 'S'],
-      '5': ['S', 'A', 'S'],
-      '6': ['S', 'A', 'S'],
-      '7': ['S', 'A', 'S']
-    },
-    seats: [
-      { seatNumber: 'L1', status: 'AVAILABLE', type: 'LOWER_BERTH' },
-      { seatNumber: 'U1', status: 'AVAILABLE', type: 'UPPER_BERTH' },
-      // ... more seats
-    ]
-  }
-];
-
+    {
+        "name": "1x2 Sleeper",
+        "rows": 8,
+        "columns": 3,
+        "layout": {
+            "row0": [
+                "1A",
+                "A",
+                "1B"
+            ],
+            "row1": [
+                "2A",
+                "A",
+                "2B"
+            ],
+            "row2": [
+                "3A",
+                "A",
+                "3B"
+            ],
+            "row3": [
+                "4A",
+                "A",
+                "4B"
+            ],
+            "row4": [
+                "5A",
+                "A",
+                "5B"
+            ],
+            "row5": [
+                "6A",
+                "A",
+                "6B"
+            ],
+            "row6": [
+                "7A",
+                "A",
+                "7B"
+            ],
+            "row7": [
+                "8A",
+                "A",
+                "8B"
+            ]
+        },
+        "seats": [
+            {
+                "seatNumber": "1A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "1B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "2A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "2B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "3A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "3B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "4A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "4B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "5A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "5B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "6A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "6B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "7A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "7B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": true
+            },
+            {
+                "seatNumber": "8A",
+                "status": "AVAILABLE",
+                "type": "LOWER_BERTH",
+                "isPremiumSeat": false
+            },
+            {
+                "seatNumber": "8B",
+                "status": "AVAILABLE",
+                "type": "UPPER_BERTH",
+                "isPremiumSeat": false
+            }
+        ]
+    }
+]
 module.exports = function(admin, populateInitialData) {
     const router = express.Router();
 

@@ -1,13 +1,14 @@
-import { Bell, Settings, UserCircle, Menu } from "lucide-react";
+import { Bell, Settings, UserCircle, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {
   title: string;
   subtitle: string;
   onMenuClick?: () => void;
+  onSignOut: () => void;
 }
 
-export default function Header({ title, subtitle, onMenuClick }: HeaderProps) {
+export default function Header({ title, subtitle, onMenuClick, onSignOut }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6">
       <div className="flex items-center min-w-0 flex-1">
@@ -41,6 +42,11 @@ export default function Header({ title, subtitle, onMenuClick }: HeaderProps) {
         
         <Button variant="ghost" size="icon">
           <UserCircle className="h-5 w-5 text-gray-400" />
+        </Button>
+
+        <Button variant="outline" onClick={onSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign Out
         </Button>
       </div>
     </header>

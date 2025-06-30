@@ -75,7 +75,7 @@ export default function Sidebar({ activeSection, onSectionChange, isMobile = fal
           </div>
           
           {navigationItems.map((item) => (
-            <Link key={item.id} href={item.id === 'overview' ? '/' : `/${item.id}`} onClick={() => onSectionChange(item.id)}>
+            <Link key={item.id} href={item.id === 'overview' ? '/dashboard' : `/${item.id}`} onClick={() => onSectionChange(item.id)}>
               <a className={cn(
                 "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-left",
                 activeSection === item.id

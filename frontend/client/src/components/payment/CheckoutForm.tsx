@@ -22,7 +22,7 @@ const CheckoutForm = () => {
 
     try {
       // Get PaymentIntent clientSecret from backend
-      const response = await fetch("http://localhost:5000/create-payment-intent", {
+      const response = await fetch("http://localhost:3001/api/payment/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -55,7 +55,7 @@ const CheckoutForm = () => {
         setPaymentStatus("success");
         
         // Send invoice to user
-        await fetch("http://localhost:5000/send-invoice", {
+        await fetch("http://localhost:3001/send-invoice", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: "hamidhussain2027@gmail.com", amount: 10.00, paymentId: paymentIntent.id }),
@@ -72,7 +72,7 @@ const CheckoutForm = () => {
     setLoading(false);
   };
 
-  const commonOptions = {
+  const baseOptions = {
     style: {
       base: {
         fontSize: '16px',
@@ -87,8 +87,12 @@ const CheckoutForm = () => {
         iconColor: '#c53030',
       },
     },
+  };
+
+  const cardNumberElementOptions = {
+    ...baseOptions,
     showIcon: true,
-    iconStyle: 'solid'
+    iconStyle: 'solid' as const,
   };
 
   return (
@@ -97,7 +101,7 @@ const CheckoutForm = () => {
         <div className="form-group card-number-group">
           <label>Card number</label>
           <div className="card-input-container">
-            <CardNumberElement options={commonOptions} />
+            <CardNumberElement options={cardNumberElementOptions} />
           </div>
         </div>
 
@@ -105,14 +109,14 @@ const CheckoutForm = () => {
           <div className="form-group expiry-group">
             <label>Expiration</label>
             <div className="card-input-container">
-              <CardExpiryElement options={commonOptions} />
+              <CardExpiryElement options={baseOptions} />
             </div>
           </div>
 
           <div className="form-group cvc-group">
             <label>Security code</label>
             <div className="card-input-container">
-              <CardCvcElement options={commonOptions} />
+              <CardCvcElement options={baseOptions} />
             </div>
           </div>
         </div>

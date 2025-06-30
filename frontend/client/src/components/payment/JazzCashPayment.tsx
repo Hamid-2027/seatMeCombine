@@ -6,36 +6,36 @@ const JazzCashPayment = () => {
   const [formData, setFormData] = useState({
     phoneNumber: '',
     cnic: '',
-    amount: ''
+    amount: null as number | null,
   });
   const [errors, setErrors] = useState({
     phoneNumber: '',
     cnic: ''
   });
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState<'success' | 'error' | null>(null);
   const [message, setMessage] = useState('');
 
-  const validatePhoneNumber = (phone) => {
+  const validatePhoneNumber = (phone: string): boolean => {
     const cleanPhone = phone.replace(/[-\s]/g, '');
     return cleanPhone.length >= 11 && cleanPhone.length <= 12;
   };
 
-  const validateCNIC = (cnic) => {
+  const validateCNIC = (cnic: string): boolean => {
     // Check for exact format XXXXX-XXXXXXX-X where X are numbers
     const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
     return cnicRegex.test(cnic);
   };
 
-  const formatPhoneNumber = (value) => {
+  const formatPhoneNumber = (value: string): string => {
     // Remove non-digits
     const numbers = value.replace(/\D/g, '');
     // Limit to 12 digits
     return numbers.slice(0, 12);
   };
 
-  const formatCNIC = (value) => {
+  const formatCNIC = (value: string): string => {
     // Remove non-digits
     const numbers = value.replace(/\D/g, '');
     
@@ -49,121 +49,68 @@ const JazzCashPayment = () => {
     return (
       formData.phoneNumber.trim() !== '' &&
       formData.cnic.trim() !== '' &&
-      formData.amount > 0
+      formData.amount !== null && formData.amount > 0
     );
   };
 
-const formatDateTime = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+
   
-  return `${year}${month}${day}${hours}${minutes}${seconds}`;
-};
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Reset previous errors
-    setErrors({ phoneNumber: '', cnic: '' });
-    
-    // Validate all fields
-    let hasErrors = false;
-    
-    if (!validatePhoneNumber(formData.phoneNumber)) {
-      setErrors(prev => ({
-        ...prev,
-        phoneNumber: 'Phone number must be 11-12 digits'
-      }));
-      hasErrors = true;
-    }
-    
-    if (!validateCNIC(formData.cnic)) {
-      setErrors(prev => ({
-        ...prev,
-        cnic: 'CNIC must be in format: XXXXX-XXXXXXX-X'
-      }));
-      hasErrors = true;
-    }
 
-    if (hasErrors) return;
+    // Validation logic
+    if (!validatePhoneNumber(formData.phoneNumber) || !validateCNIC(formData.cnic)) {
+      if (!validatePhoneNumber(formData.phoneNumber)) {
+        setErrors(prev => ({ ...prev, phoneNumber: 'Phone number must be 11-12 digits' }));
+      }
+      if (!validateCNIC(formData.cnic)) {
+        setErrors(prev => ({ ...prev, cnic: 'CNIC must be in format: XXXXX-XXXXXXX-X' }));
+      }
+      return;
+    }
 
     setLoading(true);
     setPaymentStatus(null);
     setMessage('');
 
-    console.log('Processing JazzCash payment:', formData);
-
-    const now = new Date();
-    const expiryTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
-
-    const payload = {
-      pp_Version: "1.1",
-      pp_TxnType: "MWALLET",
-      pp_Language: "EN",
-      pp_MerchantID: "MC149155",
-      pp_SubMerchantID: "",
-      pp_Password: "0xsg01dhvb",
-      pp_BankID: "",
-      pp_ProductID: "",
-      pp_TxnRefNo: new Date().getTime().toString(),
-      pp_Amount: formData.amount,
-      pp_TxnCurrency: "PKR",
-      pp_TxnDateTime: formatDateTime(now),
-      pp_BillReference: "billref",
-      pp_Description: "Description of transaction",
-      pp_TxnExpiryDateTime: formatDateTime(expiryTime),
-      pp_ReturnURL: "https://hamidhussainportfolio.netlify.app/",
-      pp_SecureHash: "9002B96FE782C0E57315D0EkkFDC68F11881270ED38187F6AEBC3F95B9E3C475",
-      ppmpf_1: formData.phoneNumber,
-      ppmpf_2: "",
-      ppmpf_3: "",
-      ppmpf_4: "",
-      ppmpf_5: ""
-    };
-
-    console.log('Payload datetime:', {
-      current: payload.pp_TxnDateTime,
-      expiry: payload.pp_TxnExpiryDateTime
-    });
-
     try {
-      const res = await axios.post('http://localhost:5000/process-payment', payload);
-        setResponse(res.data);
+      const res = await axios.post('http://localhost:3001/api/payment/jazzcash-pay', {
+        amount: formData.amount,
+        mobileNumber: formData.phoneNumber,
+        cnic: formData.cnic,
+      });
+      console.log("Response....................",JSON.stringify(res.data,null,2));
+
+      // The backend now sends a clean status and message
+      if (res.data.status === 'success') {
         setPaymentStatus('success');
-        setMessage('Payment processed successfully!');
-    } catch (error) {
-        setResponse({ error });
+      } else {
         setPaymentStatus('error');
-        setMessage('Payment failed. Please try again.');
+      }
+      setMessage(res.data.message);
+    } catch (error: any) {
+      console.error('API Error:', error.response || error);
+      setResponse({ error: error.response ? error.response.data : 'An unexpected error occurred.' });
+      setPaymentStatus('error');
+      setMessage(error.response?.data?.message || 'Payment failed. Please try again.');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'cnic') {
       const formattedValue = formatCNIC(value);
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedValue
-      }));
+      setFormData(prev => ({ ...prev, cnic: formattedValue }));
     } else if (name === 'phoneNumber') {
       const cleanValue = value.replace(/\D/g, '').slice(0, 12);
-      setFormData(prev => ({
-        ...prev,
-        [name]: cleanValue
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setFormData(prev => ({ ...prev, phoneNumber: cleanValue }));
+    } else if (name === 'amount') {
+      setFormData(prev => ({ ...prev, amount: value === '' ? null : Number(value) }));
     }
   };
 
@@ -181,7 +128,7 @@ const formatDateTime = (date) => {
             value={formData.phoneNumber}
             onChange={handleChange}
             // pattern="03[0-9]{9,10}"
-            maxLength="12"
+            maxLength={12}
             inputMode="numeric"
             required
           />
@@ -200,7 +147,7 @@ const formatDateTime = (date) => {
             value={formData.cnic}
             onChange={handleChange}
             pattern="\d{5}-\d{7}-\d{1}"
-            maxLength="15"
+            maxLength={15}
             inputMode="numeric"
             required
           />
@@ -215,7 +162,7 @@ const formatDateTime = (date) => {
           id="amount"
           name="amount"
           placeholder="Enter PKR"
-          value={formData.amount}
+          value={formData.amount === null ? '' : formData.amount}
           onChange={handleChange}
           required
           min="1"
