@@ -143,8 +143,8 @@ export default function ScheduleDetailsPage({ params }: ScheduleDetailsPageProps
             </Card>
           </div>
           <div>
-            {bus?.seatLayout ? (
-              <BusSeatLayout layout={bus.seatLayout as SeatLayout} />
+            {schedule?.seatLayout ? (
+              <BusSeatLayout layout={schedule.seatLayout as SeatLayout} />
             ) : (
               <div className="py-10 text-center text-gray-400">No seat layout available</div>
             )}

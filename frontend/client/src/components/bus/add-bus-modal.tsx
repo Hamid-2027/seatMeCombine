@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getBusCompanies } from "@/api/busCompanies";
 import { getSeatLayouts } from "@/api/seatLayouts";
 import { createBus } from "@/api/buses";
+import BusSeatLayout from "@/components/schedule/BusSeatLayout";
 import type { Bus, BusCompany, SeatLayout } from "@shared/schema";
 
 // Create a Zod schema for form validation based on the Bus interface
@@ -167,20 +168,8 @@ export default function AddBusModal({ open, onOpenChange }: AddBusModalProps) {
 
   const renderSeatLayoutPreview = (layout: SeatLayout) => {
     return (
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <div className="space-y-1">
-          {Object.entries(layout.layout).map(([row, seats]) => (
-            <div key={row} className="flex items-center justify-center space-x-1">
-              {seats.map((seatLabel, seatIndex) => (
-                <div 
-                  key={`${row}-${seatIndex}`}
-                  className={`w-5 h-5 rounded text-white text-xs flex items-center justify-center ${seatLabel ? 'bg-blue-500' : 'bg-transparent'}`}>
-                  {seatLabel}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+      <div>
+        <BusSeatLayout layout={layout} readOnly size="small" />
         <p className="text-xs text-center text-gray-500 mt-2">{layout.seats.length} seats</p>
       </div>
     );

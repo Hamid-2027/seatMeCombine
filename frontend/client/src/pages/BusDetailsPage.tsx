@@ -6,6 +6,7 @@ import type { Bus } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import BusSeatLayout from '@/components/schedule/BusSeatLayout';
 
 interface BusDetailsPageProps {
   params: {
@@ -109,19 +110,7 @@ export default function BusDetailsPage({ params }: BusDetailsPageProps) {
                 <CardTitle>{bus.seatLayout.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-100 p-4 rounded-lg flex flex-col items-center space-y-2">
-                  {bus.seatLayout.layout && Object.entries(bus.seatLayout.layout).map(([row, seats]) => (
-                    <div key={row} className="flex items-center justify-center space-x-2">
-                      {seats.map((seatLabel, seatIndex) => (
-                        <div 
-                          key={`${row}-${seatIndex}`}
-                          className={`w-8 h-8 rounded-md text-white text-xs flex items-center justify-center font-bold ${seatLabel ? 'bg-blue-600' : 'bg-transparent'}`}>
-                          {seatLabel}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
+                <BusSeatLayout layout={bus.seatLayout} readOnly />
               </CardContent>
             </Card>
           </div>

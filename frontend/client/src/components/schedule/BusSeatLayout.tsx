@@ -20,6 +20,7 @@ interface BusSeatLayoutProps {
   };
   onSelect?: (seatNumber: string) => void;
   readOnly?: boolean;
+  size?: 'small' | 'normal';
 }
 
 // Strict HEX color mapping for seat statuses, with high-contrast text
@@ -31,38 +32,46 @@ const seatColors = {
   unavailable: "bg-gray-400 text-white border-gray-400",        // Fallback grey, white text
 };
 
-export default function BusSeatLayout({ layout, onSelect, readOnly = false }: BusSeatLayoutProps) {
-  // Build a seat map from layout.seats and validate layout structure
+export default function BusSeatLayout({ layout, onSelect, readOnly = false, size = 'normal' }: BusSeatLayoutProps) {
+  const seatSizeClass = size === 'small' ? 'w-5 h-5 text-[8px]' : 'w-10 h-10';
+  const aisleSizeClass = size === 'small' ? 'w-5 h-5' : 'w-10 h-10';
+  const iconSizeClass = size === 'small' ? 'text-[6px]' : 'text-xs';
+  const gapClass = size === 'small' ? 'gap-1' : 'gap-2';
+  const paddingClass = size === 'small' ? 'p-2' : 'p-4';
+
   const seatsMap = new Map<string, Seat>(layout.seats.map(s => [s.seatNumber, s]));
   const allRows = layout.layout ? Object.entries(layout.layout) : [];
 
   return (
     <div className="flex flex-col items-center">
-      {/* Legend */}
-      <div className="flex flex-row flex-nowrap items-center justify-center gap-x-3 text-xs mb-4">
-        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.available} rounded-sm mr-1`} />Available</div>
-        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.male} rounded-sm mr-1`} />Male</div>
-        <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.female} rounded-sm mr-1`} />Female</div>
-      </div>
+      {size === 'normal' && (
+        <>
+          {/* Legend */}
+          <div className="flex flex-row flex-nowrap items-center justify-center gap-x-3 text-xs mb-4">
+            <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.available} rounded-sm mr-1`} />Available</div>
+            <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.male} rounded-sm mr-1`} />Male</div>
+            <div className="flex items-center gap-1.5"><div className={`w-4 h-4 border-2 ${seatColors.female} rounded-sm mr-1`} />Female</div>
+          </div>
 
-      {/* Steering wheel icon */}
-      <div className="flex justify-center mb-2">
-        <GiSteeringWheel className="text-2xl text-gray-500" />
-      </div>
+          {/* Steering wheel icon */}
+          <div className="flex justify-center mb-2">
+            <GiSteeringWheel className="text-2xl text-gray-500" />
+          </div>
+        </>
+      )}
 
       {/* Seat Grid */}
       {layout && layout.layout ? (
-        <div className="flex flex-col gap-2 p-4 bg-[#f5f5f5] rounded-lg">
+        <div className={`flex flex-col ${gapClass} ${paddingClass} bg-[#f5f5f5] rounded-lg`}>
           {allRows.map(([rowKey, row], rowIndex) => (
-            <div key={rowKey} className="flex gap-2 justify-center">
+            <div key={rowKey} className={`flex ${gapClass} justify-center`}>
               {row.map((seatNumber, seatIndex) => {
                 if (!seatNumber || seatNumber.toUpperCase() === 'A') {
-                  return <div key={`${rowKey}-${seatIndex}`} className="w-10 h-10" />; // Aisle
+                  return <div key={`${rowKey}-${seatIndex}`} className={aisleSizeClass} />; // Aisle
                 }
 
                 const seat = seatsMap.get(seatNumber);
                 
-                // Create a default available seat if not found in seatsMap
                 const seatData = seat || {
                   seatNumber,
                   status: SeatStatus.AVAILABLE,
@@ -72,7 +81,6 @@ export default function BusSeatLayout({ layout, onSelect, readOnly = false }: Bu
 
                 const isBooked = seatData.status === SeatStatus.BOOKED;
 
-                // Set colors based on seat status
                 let colorClass = seatColors.available;
                 let textClass = "font-semibold";
 
@@ -84,17 +92,14 @@ export default function BusSeatLayout({ layout, onSelect, readOnly = false }: Bu
                         colorClass = seatColors.female;
                         textClass += " text-white";
                     } else {
-                        // This case handles seats that are booked but have no gender specified.
                         colorClass = seatColors.unavailable;
                         textClass += " text-white";
                     }
                 } else {
-                    // Available seats
                     colorClass = seatColors.available;
                     textClass += " text-blue-700";
                 }
 
-                // Handle clickability
                 const isClickable = seatData.status === SeatStatus.AVAILABLE && seatData.type !== 'aisle' && !readOnly;
                 const hoverClass = isClickable ? "hover:opacity-90" : "cursor-not-allowed";
 
@@ -103,13 +108,13 @@ export default function BusSeatLayout({ layout, onSelect, readOnly = false }: Bu
                     type="button"
                     key={`${rowKey}-${seatIndex}`}
                     disabled={!isClickable}
-                    className={`w-10 h-10 rounded-md flex items-center justify-center border-2 transition-colors duration-150 ${colorClass} ${textClass} ${hoverClass}`}
+                    className={`rounded-md flex items-center justify-center border-2 transition-colors duration-150 ${seatSizeClass} ${colorClass} ${textClass} ${hoverClass}`}
                     onClick={() => isClickable && onSelect?.(seatNumber)}
                     title={isBooked ? `Booked - ${seatData.gender ? seatData.gender : 'Unknown'}` : 'Available'}
                   >
                     {seatNumber.toLowerCase()}
-                    {seatData.gender === 'MALE' && isBooked && <MaleIcon className="ml-1 text-xs" />}
-                    {seatData.gender === 'FEMALE' && isBooked && <FemaleIcon className="ml-1 text-xs" />}
+                    {seatData.gender === 'MALE' && isBooked && <MaleIcon className={`ml-1 ${iconSizeClass}`} />}
+                    {seatData.gender === 'FEMALE' && isBooked && <FemaleIcon className={`ml-1 ${iconSizeClass}`} />}
                   </button>
                 );
               })}
